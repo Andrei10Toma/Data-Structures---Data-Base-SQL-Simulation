@@ -1,0 +1,164 @@
+TOMA Andrei-311CB
+
+
+	Am implementat tema cu ajutorul a 3 fisiere: main.c, functii.c si
+structures.h. In structures.h am declarate antetele functiilor si, de asemenea,
+structurile pe care le-am folosit in implementarea bazei de date. In functii.c
+sunt implementate functiile pentru data definition, data query si data 
+manipulation. In main.c este citita comanda si apelata functia din functii.c
+corespunzatoare comenzii.
+	Am adaugat in structures.h 2 macro-uri: F_DIGITS(=6) care reprezinta
+numarul de zecimale al unui numar real si DOT_DIGIT(=1) care reprezinta punctul din numarul real.
+	Functii din functii.c:
+type={INT, FLOAT, STRING};
+
+t_db *init_db (char *name) - initializeaza baza de date cu numele name si
+returneaza baza de date;
+
+t_<type>Cell *alloc_<type>Cell (<type> value) - aloca memorie pentru celula de 
+tip <type> si initializeaza campul value din celula cu valoarea data ca
+parametru value, iar campul next cu NULL si returneaza celula;
+
+t_<type>Line *alloc_<type>Linie () - aloca memorie pentru linia de tip <type>,
+seteaza campurile next si cells pe NULL si returneaza linia;
+
+int adauga_<type>LinieSf (t_<type>Line *line, t_table **table) - adauga in 
+tabelul *table de tip <type> la sfarsitul listei de linii linia line. Returneaza
+1 daca adaugarea a fost facuta cu succes si 0 in caz contrar;
+
+int adauga_<type>Linie (t_<type>Line **line, t_<type>Cell *cell) - adauga la
+linia *line celula cell la sfarsit. Returneaza 1 daca adaugarea a fost facuta
+cu succes si 0 in caz contrar;
+
+t_column *alloc_column (char *name) - aloca memorie pentru o coloana, in campul
+name pune valoarea data ca parametru name, iar campul next este setat pe NULL
+si returneaza coloana;
+
+int adaugare_col_final (t_table **table, t_column *col) - adauga la finalul 
+listei de coloane din tabelul *table coloana col prin determinarea ultimului
+element din lista. Returneaza 1 daca adaugareaa fost facuta cu succes si 0 in
+caz contrar;
+
+int adaugare_tabel_final (t_db **a, t_table *table) - adauga la finalul listei
+de tabele din baza de date *a tabelul dat ca parametru table prin determinarea 
+ultimului tabel din lista de tabele. Functia returneaza 1 daca adaugarea a fost
+facuta cu succes si 0 in caz contrar;
+
+int create_table (t_db *a, char *s) - elimina '\n' de la finalul lui s. Se aloca
+spatiu pentru tabel, se determina numele din comanda s, iar dupa se verifica
+daca numele este existent intr-unul dintre tabelele din lista de tabele. Daca
+nu exista salveaza numele in campul name. Urmeaza extragerea tipului de date
+din comanda tot cu strtok si daca este vreunul dintre cele 3 il salveaza in
+campul type, altfel printeaza mesaj de eroare. Dupa aceea este extras pe rand
+fiecare nume de coloana si este alocat celula cu numele extras si adaugat in
+lista de coloane din tabelul creat. In final, tabelul este adaugata la finalul
+listei de tabele si se returneaza 1 pentru ca crearea avut loc cu succes;
+t_table *cauta_tabel (t_db *a, char *nume) - cauta in lista de tabele din baza
+de date a tabelul cu numele nume. Daca il gaseste returneaza un pointer catre
+acesta, altfel returneaza NULL;
+
+int add_line (t_db *a, char *s) - extrage numele tabelului din comanda s cu
+strtok. Daca il gaseste in baza de date in functie de tipul care este (INT, 
+FLOAT sau STRING) aloca linia de tipul respectiv si o adauga la finalul listei
+de linii dupa care extrage fiecare informatie pe rand prin strtok o aloca si
+o adauga la finalul listei de celule de pe linia alocata. Intoarce 1 daca
+adaugarea a fost facuta cu succes si 0 in caz contrar;
+
+int clear_lines_<type> (t_table *t) - pentru fiecare linie din tabelul t este 
+parcursa fiecare celula de tip <type> si eliberata dupa care este eliberata
+linia. Returneaza 1 daca operatia a fost facuta cu succes;
+
+int clear_line (t_table *t, char *r) - sterge toate liniile din tabelul t;
+void delete_table_<type> (t_table **t) - elibereaza memorie pentru fiecare
+coloana, iar dupa pentru fiecare linie elibereaza celulele de tip <type>
+de pe linia respectiva dupa care elibereaza linia.
+
+int delete_table (t_db *a, char *nume) - elibereaza memoria pentru un tabel cu
+numele nume. Returneaza 1 daca stergerea a fost facuta cu succes si 0 in caz
+contrar;
+
+void delete_<type>_line_cells (t_<type>Cell **cell) - sterge lista de celule;
+
+int delete_table_line(t_table *t, char *col, char *relation, char *val, 
+char *r) - cauta coloana in lista de coloana din tabelul t si retine pozitia
+ei in tabel printr-un contor nr. In functie de tipul tabelului t apeleaza alta
+functie pentru stergerea liniilor care respecta conditia data;
+
+void delete_tables_lines_<type> (t_table *t, char *relation, char *val,
+int nr) - valoarea val este convertita daca este nevoie. Pentru fiecare linie se
+initializeaza o variabila ok=0 care determina daca a fost gasita o linie care
+sa respecte relatia data si un contor cont=0 care determina daca suntem pe
+coloana ceruta (cont == nr). Pentru fiecare linie este retinut  anteriorul
+in lista de linii si se parcurge fiecare celula si cont este incrementat. Cand 
+cont devine egal cu nr si daca valoarea de pe coloana data respecta relatia
+atunci ok devine 1. Daca ok==1 atunci elibereaza celulele de pe linia gasita si
+reface legaturile in lista de linii si se trece la urmatorul element in lista de
+linii. Altfel daca ok == 0 anterior merge pe pozitia urmatoare si se trece la
+urmatorul element din lista;
+
+delete_db (t_db **a) - sterge intreaga baza de date. Pnetru fiecare tabel din
+baza de date *a sterge tabelul prin intermediul functiei delete_table. In 
+final, este eliberat spatiul alocat pentru baza de date;
+
+int numar_cifre_int (int n) - determina numarul de caractere ale unui intreg
+prin impartiri repetate la 10;
+
+int digit_float (float n) - este determinata partea intreaga a lui n, iar dupa
+este determinat numarul de caractere ale partii intregi prin impartiri repetate
+la 10;
+
+void print_table_column (t_table *t) - afiseaza coloanaele tabelului si pune
+MAX_COLUMN_NAME_LEN-strlen(t->columns->name) spatii intre ele. Dupa care sunt
+puse liniile care despart numele coloanelor de informatiile din tabela si 
+paddingul.
+
+void print_table_<type> (t_table *t) - afiseaza informatiile dintr-un tabel de
+tip type. Pentru type==INT sunt afisate valoriile cu MAX_COLUMN_NAME_LEN-
+numar_cifre_int(ci->value) spatii intre ele. Pentru type==FLOAT sunt afisate
+valorile cu MAX_COLUMN_NAME_LEN-digit_float(cf->value) spatii intre ele. Pentru
+type==STRING sunt afisate valorile cu MAX_COLUMN_NAME_LEN-strlen(cs->value)
+spatii intre ele;
+
+void print_table (t_table *t, char *r) - afiseaza tabelul cu numele dat.
+Afiseaza mai intai numele sau, dupa care afiseaza coloanele si este apelata
+una una dintre functiile de mai sus in functie de ce tip are tabelul;
+
+void print_<type>_line (t_<type>Line *li) - afiseaza intreaga linie li in
+functie de tipul liniei cu spatiile respcetive intre fiecare valoare.
+
+void search_cmp_<type> (t_table *t, char *relation, char *val, int nr) - este 
+printat numele tabelului si coloanele si pentru fiecare linie este setat un
+contor cu 0. Pentru fiecare linie sunt parcurse toate celulele de pe linia
+respectiva si este incrementat contorul. Cand contorul este egal cu nr inseamna
+ca ne aflam pe coloana buna si putem verifica relatia. Daca relatia este
+respectata afisam linia respectiva din tabelul dat.
+
+void search_db (t_table *t, char *col, char *relation, char *val, char *r) - 
+cautam coloana cu numele col in lista de coloane si incrementam un contor nr
+pentru fiecare avans in lista de coloane. Daca a fost gasita coloana cu numele
+col gasit devine 1. Daca gasit este 0 dupa iesirea din for atunci este afisat
+mesajul de eroare. Altfel daca gasit este 1 apelam functia pentru tipul
+tabelului t;
+
+void print_db (t_db *a) - afiseaza intreaga baza de date. Afiseaza numele bazei
+de date si dupa aceea afiseaza informatiile din lista de tabele a bazei de date
+cu ajutorul functiilor print_table_<type> si print_table_column.
+
+	Functii din main.c:
+char *first_space (char *s) - returneaza sirul de caractere dupa primul spatiu.
+
+int main () - cat timp comanda este diferita de DELETE_DB citeste comanda in s.
+Pentru fiecare comanda data este initializata o variabila ok_cmd=0 cu care vom
+determina corectitudinea comenzii. Este evaluat primul cuvant al comenzii si 
+este apelata functia din functii.c respectiva comenzii. In cazul DELETE si
+SEARCH am extras toate cuvintele din comanda cu strtok si am apelat functia
+pentru fiecare comanda, iar la DELETE daca nu a fost citit numele coloanei
+atunci vom apela delete_table, dar altfel vom apela delete_table_lines care face
+stergere selectiva. Daca ok_cmd ramane 0 inseamna ca am dat comanda gresit si
+va fi afisat mesajul de eroare. In final dupa ce iesim din while (comanda data
+este DELETE_DB) va fi apelata functia delete_db care sterge intreaga baza de 
+date.
+
+Punctaj total 85.0/85.0
+Punctaj valgrind 20.0/20.0
+
